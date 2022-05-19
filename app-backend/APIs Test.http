@@ -1,0 +1,18 @@
+POST http://localhost:3001/login
+Content-Type: application/json
+
+{
+    "username": "pkb",
+    "password": "pk1432"
+}
+###
+
+POST http://localhost:3001/register
+Content-Type: application/json
+
+{
+    "username": "pkb3",
+    "password": "pk1432",
+    "firstname": "Pavan Kalyan",
+    "lastname": "Bandaru"
+}
