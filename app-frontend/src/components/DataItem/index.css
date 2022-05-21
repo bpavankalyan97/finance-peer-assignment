@@ -1,0 +1,37 @@
+.data-item-container{
+    margin-bottom: 20px;
+}
+
+.li-data-card{
+    height: 100%;
+    padding: 0 16px;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+}
+
+.li-ids-container{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+/* .li-id{}
+
+.li-user-id{}
+
+.li-title{}
+
+.li-body{} */
+
+@media screen and (min-width: 768px) {
+    .data-item-container{
+        width: 50%;
+        padding: 0 10px;
+    }
+}
+
+@media screen and (min-width: 992px) {
+    .data-item-container{
+        width: 33.33%;
+    }
+}
