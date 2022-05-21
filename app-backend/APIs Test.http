@@ -16,3 +16,7 @@ Content-Type: application/json
     "firstname": "Pavan Kalyan",
     "lastname": "Bandaru"
 }
+###
+
+GET http://localhost:3001/data
+###

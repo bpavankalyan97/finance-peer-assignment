@@ -35,8 +35,8 @@ const initializeDbAndServer = async () => {
     }
 }
 
-const sendErrorResponse = (response, errorMessage) => {
-    response.status(400);
+const sendErrorResponse = (response, errorMessage, status=400) => {
+    response.status(status);
     response.send({error_message: errorMessage});
 }
 
@@ -61,7 +61,7 @@ app.post("/login", validateCredentials, async (request, response) => {
     const {username, password} = request.body;
 
     try{
-        const dbUsernameQuery = `SELECT * FROM users WHERE username='${username}'`;
+        const dbUsernameQuery = `SELECT * FROM users WHERE username='${username}';`;
         const dbObject = await db.get(dbUsernameQuery);
 
         if (dbObject === undefined){
@@ -86,6 +86,7 @@ app.post("/login", validateCredentials, async (request, response) => {
     }
     catch(error){
         console.error(error.message);
+        sendErrorResponse(response, error.message, 500);
     }
 });
 
@@ -93,7 +94,7 @@ app.post("/register", validateCredentials, async (request, response) => {
     const {username, password, firstname, lastname} = request.body;
 
     try{
-        const dbUsernameQuery = `SELECT * FROM users WHERE username='${username}'`;
+        const dbUsernameQuery = `SELECT * FROM users WHERE username='${username}';`;
         const dbObject = await db.get(dbUsernameQuery);
 
         if (dbObject !== undefined){
@@ -118,11 +119,86 @@ app.post("/register", validateCredentials, async (request, response) => {
     }
     catch(error){
         console.error(error.message);
+        sendErrorResponse(response, error.message, 500);
     }
 });
 
-app.get("/", (request, response) => {
-    response.send("Hello user, welcome..");
+const authenticateUser = (request, response, next) => {
+    const authHeader = request.headers["authorization"];
+
+    let jwtToken;
+    if (authHeader !== undefined) {
+        jwtToken = authHeader.split(" ")[1];
+      }
+
+    if(jwtToken === undefined){
+        sendErrorResponse(response, "Invalid JWT Token", 401);
+    }
+    else{
+        jwt.verify(jwtToken, jwtSecretKey, async (error, payload) => {
+            if(error){
+                sendErrorResponse(response, "Invalid JWT Token", 401);
+            }
+            else{
+                request.username = payload.username;
+                next();
+            }
+        });
+    }
+
+};
+
+app.post("/upload", authenticateUser, async (request, response) => {
+    const {username} = request;
+    const {data} = request.body;
+    const stringifyedData = JSON.stringify(data);
+
+    const getUserQuery = `SELECT data FROM user_data WHERE username='${username}';`;
+
+    try{
+        const dbResponse = await db.get(getUserQuery);
+
+        const insertUserDataQuery = dbResponse === undefined ? 
+            `INSERT INTO user_data (username, data) VALUES ('${username}', '${stringifyedData}');` :
+            `UPDATE user_data SET data = '${stringifyedData}' WHERE username = '${username}'`;
+        
+        await db.run(insertUserDataQuery);
+        response.status(200);
+        response.send({message: "Data uploaded successful"});
+    }
+    catch(error){
+        console.log(error.message);
+        sendErrorResponse(response, error.message, 500);
+    }
+});
+
+app.get("/data", authenticateUser, async (request, response) => {
+    const {username} = request
+
+    const userDataQuery = `SELECT data FROM user_data WHERE username='${username}';`;
+
+    try{
+        const dbResponse = await db.get(userDataQuery);
+
+        if (dbResponse === undefined){
+            response.status(200);
+            response.send({
+                data: [],
+                message: "No stored data available for this user"
+            })
+        }
+        else{
+            response.status(200);
+            response.send({
+                data: JSON.parse(dbResponse.data)
+            });
+        }
+    }
+    catch(error){
+        console.log(error.message);
+        sendErrorResponse(response, error.message, 500);
+    }
+
 });
 
 initializeDbAndServer();
