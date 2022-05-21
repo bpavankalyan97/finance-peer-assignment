@@ -1,0 +1,46 @@
+.navbar{
+    height: 12vh;
+    margin: 0 auto;
+    padding: 0 25px;
+    display: flex;
+    align-items: center;
+    background-color: #1e95f716;
+}
+
+.profile-icon{
+    color: #585858;
+    font-size: 32px;
+    margin-right: 10px;
+}
+
+.profile-name{
+    margin: 0;
+    color: #474747;
+}
+
+.logout-button{
+    color: #000000;
+    font-weight: 600;
+    padding: 6px 16px;
+    margin-left: auto;
+    border-radius: 8px;
+    border: 2px solid #036fc780;
+    background-color: #ffffff;
+}
+
+.logout-button:hover{
+    color: #ffffff;
+    background-color: #036fc780;
+}
+
+@media screen and (min-width: 768px) {
+    .navbar{
+        padding: 0 50px;
+    }
+}
+
+@media screen and (min-width: 992px){
+    .navbar{
+        padding: 0 100px;
+    }
+}
