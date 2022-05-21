@@ -1,5 +1,6 @@
 const express = require('express');
 const path = require('path');
+const cors = require('cors');
 
 const {open} = require('sqlite');
 const sqlite3 = require('sqlite3');
@@ -11,6 +12,7 @@ const bcryptHashCode = 10;
 const jwtSecretKey = "MY_SECRET_TOKEN";
 
 const app = express();
+app.use(cors());
 app.use(express.json());
 
 let db = null;
@@ -21,10 +23,10 @@ const initializeDbAndServer = async () => {
             filename: path.join(__dirname, "Database.db"),
             driver: sqlite3.Database,
         });
-        console.log("Database initialized..");
+        console.log("Established Database connection");
 
         app.listen(3001, ()=>{
-            console.log("Server started and running at http://localhost:3001/");
+            console.log("Server started, running at http://localhost:3001/");
         })
     }
     catch(error){
@@ -63,7 +65,7 @@ app.post("/login", validateCredentials, async (request, response) => {
         const dbObject = await db.get(dbUsernameQuery);
 
         if (dbObject === undefined){
-            sendErrorResponse(response, "Invalid username");
+            sendErrorResponse(response, "Username didn't exist");
         }
         else{
             const isPasswordMatched = await bcrypt.compare(password, dbObject.password);
@@ -73,7 +75,6 @@ app.post("/login", validateCredentials, async (request, response) => {
                 const jwtToken = jwt.sign(payload, jwtSecretKey);
                 const responseObject = {
                     firstname: dbObject.firstname,
-                    lastname: dbObject.lastname,
                     jwt_token: jwtToken
                 };
                 response.send(responseObject);
@@ -96,7 +97,7 @@ app.post("/register", validateCredentials, async (request, response) => {
         const dbObject = await db.get(dbUsernameQuery);
 
         if (dbObject !== undefined){
-            sendErrorResponse(response, "Username already exist");
+            sendErrorResponse(response, "Username already exist, Try again with different email ID");
         }
         else{
             const encryptedPassword = await bcrypt.hash(password, bcryptHashCode);
